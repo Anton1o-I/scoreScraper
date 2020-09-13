@@ -24,6 +24,7 @@ class Team(scrapy.Item):
     location = scrapy.Field()
     name = scrapy.Field()
 
+
 class TeamStats(scrapy.Item):
     team = scrapy.Field()
     game_id = scrapy.Field()
@@ -117,3 +118,6 @@ class PlayerStats(scrapy.Item):
     off_rating = scrapy.Field()
     def_rating = scrapy.Field()
     bpm = scrapy.Field()
+    obpm = scrapy.Field()
+    dbpm = scrapy.Field()
+    vorp = scrapy.Field()

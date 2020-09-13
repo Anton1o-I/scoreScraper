@@ -8,10 +8,6 @@
 - Pull Four Factors
 - Pull Player Stats
 
-
-- Need to subtract 1win from winning team 1loss from winning/losing team each game
-
-
 {
     game_information: Game(),
     team_stats: {
@@ -26,7 +22,23 @@
 
 
 ### NEXT STEPS
-- Continue doing team parsing
 - move to player parsing
 - update scrapy pipeline
 - update pipeline -> DB mapping
+
+
+#combining basic box and advanced box stats for players
+basic_box returns dict of player Stats
+{
+    "player1": {PLAYER INFO AND ALL THEIR STATS},
+    ...
+}
+advanced_box returns same 
+{
+    "player1": {ALL OTHER STATS},
+    ...
+}
+
+for key in basic_box.keys():
+    out_dict = basic[key].update(advanced[key])
+    out_list.append(out_dict)
