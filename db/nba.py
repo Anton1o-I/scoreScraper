@@ -136,7 +136,7 @@ class PlayerStat(Base):
     game = relationship("Game", back_populates="player_stats")
     team_abbr = Column(String, ForeignKey("teams.abbr"))
     team = relationship("Team", back_populates="player_stats")
-    minutes = Column(Integer)
+    minutes = Column(Float)
     points = Column(Integer)
     drebs = Column(Integer)
     orebs = Column(Integer)

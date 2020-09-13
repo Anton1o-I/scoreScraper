@@ -125,7 +125,18 @@ class BBRefSpider(Spider):
     
 
     def get_player_stats(self, response, game_id):
-        return {}
+        # team_information contains len = 2 list of strings with team name information
+        team_information = response.xpath("//strong/a[@itemprop='name']").getall()
+
+        # regex parses <a href="/teams/POR/2006.html" itemprop="name">Portland Trail Blazers</a> into groups
+        # POR -> "abbr", Portland Trail Blazers -> "name"
+        away = re.search(r'teams/(?P<abbr>[A-Z]{3}).*>(?P<name>[A-Za-z ]+)<', team_information[0]).group("abbr")
+        home = re.search(r'teams/(?P<abbr>[A-Z]{3}).*>(?P<name>[A-Za-z ]+)<', team_information[1]).group("abbr")
+ 
+        home_stats = parse_player_stats(response, home)
+        away_stats = parse_player_stats(response, away)
+        
+        return {"home_stats": home_stats, "away_stats": away_stats}
 
 
     def parse_player_stats(self, response, team_abbr: str):
@@ -135,6 +146,93 @@ class BBRefSpider(Spider):
         basic_xpath_str = '//table[@id="box-' + team_abbr + '-game-basic"]//tbody/tr[not(@class="thead")]'
         advanced_xpath_str = '//table[@id="box-' + team_abbr + '-game-advanced"]//tbody/tr[not(@class="thead")]'
 
+        # Below regex returns list of html for each player on the away or home team:
+        #    '<tr><th scope="row" class="left " data-append-csv="harklma01" data-stat="player" csk="Harkless,Maurice">
+        #    <a href="/players/h/harklma01.html">Maurice Harkless</a></th><td class="right " data-stat="mp" 
+        #    csk="2453">40:53</td><td class="right " data-stat="fg">6</td><td class="right " data-stat="fga">13</td>
+        #    <td class="right " data-stat="fg_pct">.462</td><td class="right iz" data-stat="fg3">0</td><td class="right " 
+        #    data-stat="fg3a">4</td><td class="right " data-stat="fg3_pct">.000</td><td class="right " data-stat="ft">2
+        #    </td><td class="right " data-stat="fta">3</td><td class="right " data-stat="ft_pct">.667</td><td class="right
+        #     " data-stat="orb">1</td><td class="right " data-stat="drb">5</td><td class="right " data-stat="trb">6</td>
+        #    <td class="right " data-stat="ast">6</td><td class="right " data-stat="stl">1</td><td class="right iz" data-stat="blk">0</td><td class="right " 
+        #    data-stat="tov">1</td><td class="right " data-stat="pf">3</td><td class="right " data-stat="pts">14</td>
+        #    <td class="right " data-stat="plus_minus">+10</td></tr>'
+
+        basic_list = response.xpath(basic_xpath_str).getall()
+        advanced_list = response.xpath(advanced_xpath_str).getall()
+
+        basic_stats = self.parse_basic_player(basic_list)
+        advanced_stats = self.parse_advanced_player(advanced_list)
+
+        return dict(PlayerStats())
+
+    def parse_basic_player(self, stat_list):
+        bbref_to_pstat_map_basic = {
+            "mp": "min",
+            "fg": "fgm",
+            "fga": "fga",
+            "fg_pct": "fg_per",
+            "fg3": "x3pm",
+            "fg3a": "x3pa",
+            "fg3_pct": "x3p_per",
+            "ft": "ftm",
+            "fta": "fta",
+            "ft_pct": "ft_per",
+            "orb": "oreb",
+            "drb": "dreb",
+            "trb": "reb",
+            "ast": "ast",
+            "stl": "stl", 
+            "blk": "blk", 
+            "tov": "to",
+            "pf": "pf",
+            "pts": "pts",
+            "plus_minus": "plusminus",
+        }
+        re_player_info = r'data-append-csv="(?P<id>[a-z0-9]+)".+csk="(?P<name>[A-Za-z,]+)'
+
+        # mp -> minutes played has an extra identifying field 'csk' within the <> so it needs to be pulled with
+        # it's own regex code.
+        re_mp = r'data-stat=\"mp\".+>(?P<val>[0-9]{2}:[0-9]{2})</td>'
+        re_stats = r'data-stat=\"(?P<stat>[a-z0-9_]+)\">(?P<val>[0-9.:+]+)</td>'
+
+        player_stats = list()
+        for line in stat_list:
+            # this splits off the table header information for each row, which contains all of the player
+            # information, name and id. The stat group contains the <tr> sections that correspond to each
+            # players basic statistics
+            split_header = line.split("</th>")
+            name_group = split_header[0]
+            stat_group = split_header[1]
+
+            player_info = re.search(re_player_info, name_group)
+            # Basketball Reference uses LastName, FirstName formatting for players
+            player_name = player_info.group("name").split(",")
+            player_obj = Player(
+                player_id = player_info.group("id"), 
+                last_name = player_name[0], 
+                first_name = player_name[1]
+                )
+            
+            mp = re.search(re_mp, stat_group).group("val")
+            stat_dict = {"min": self.time_string_to_hours(mp)}
+            parsed_stats = re.findall(re_stats, stat_group)
+            for s in parsed_stats:
+                if s[0] in bbref_to_pstat_map_basic.keys():
+                    stat_dict[bbref_to_pstat_map_basic[s[0]]] = s[1]
+
+            p_stat = PlayerStats(player = dict(player_obj), **stat_dict)
+            player_stats.append(p_stat)
+        return player_stats
+
+    def parse_advanced_player(self, stat_list):
+        return {}
+
+    @staticmethod
+    def time_string_to_hours(time:str) -> float:
+        # Transforms time from 40:53 -> 40.8833 
+        split = time.split(":")
+        return split[0] + (split[1]/60)
 
     def parse_team_stats(self, response, team_abbr: str):
         # xpath is dynamically named after the teams abbreviation, so that needs to get passed into the 
@@ -156,14 +254,14 @@ class BBRefSpider(Spider):
         scoreline = response.xpath(scoreline_xpath).get()
 
         team_stat_dict = {}
-        team_stat_dict.update(self.parse_basic_box(basic_box))
-        team_stat_dict.update(self.parse_advanced_box(advanced_box))
+        team_stat_dict.update(self.parse_basic_team(basic_box))
+        team_stat_dict.update(self.parse_advanced_team(advanced_box))
         team_stat_dict.update(self.parse_four_factor(four_factor, team_abbr))
         team_stat_dict.update(self.parse_scoreline(scoreline, team_abbr)) 
 
         return team_stat_dict
 
-    def parse_basic_box(self, basic_box: List[str]) -> dict:
+    def parse_basic_team(self, basic_box: List[str]) -> dict:
         # basic_box is a list of cells from the basic box score table
         # each looks like this '<td class="right " data-stat="mp">240</td>'
         
@@ -191,7 +289,7 @@ class BBRefSpider(Spider):
         }
         return self.parse_team_box(basic_box, bbref_to_teamstat_map)
 
-    def parse_advanced_box(self, advanced_box: str) -> dict:
+    def parse_advanced_team(self, advanced_box: str) -> dict:
         # advanced_box is a list of cells from the advanced box score table
         # each looks like this '<td class="right " data-stat="mp">240</td>'
         
