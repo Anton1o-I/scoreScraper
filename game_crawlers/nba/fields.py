@@ -21,7 +21,7 @@ class Line(scrapy.Item):
 
 
 class Team(scrapy.Item):
-    location = scrapy.Field()
+    abbreviation = scrapy.Field()
     name = scrapy.Field()
 
 
@@ -64,7 +64,7 @@ class TeamStats(scrapy.Item):
     oreb_per = scrapy.Field()
     dreb_per = scrapy.Field()
     reb_per = scrapy.Field()
-    ast_per = scrapy.Field
+    ast_per = scrapy.Field()
     stl_per = scrapy.Field()
     blk_per = scrapy.Field()
     tov_per = scrapy.Field()

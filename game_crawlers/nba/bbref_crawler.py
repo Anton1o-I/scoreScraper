@@ -27,7 +27,7 @@ class BBRefScoreboard:
     def __init__(self):
         pass
 
-    def get_scoreboard_urls(self):
+    def get_all_scoreboard_urls(self):
         url_list = list()
         for _, v in Seasons.season_info.items():
             url_list = url_list + list(
@@ -37,6 +37,10 @@ class BBRefScoreboard:
                 self._get_bbref_url(v["post_season_start"], v["post_season_end"])
             )
         return url_list
+    
+    def get_urls_by_range(self, start, end):
+        delta = (end + timedelta(days=1) - start).days
+        return [self.get_urls_date(d) for d in delta]
 
     def get_urls_date(self, date: datetime):
         return f"https://www.basketball-reference.com/boxscores/?month={date.month}&day={date.day}&year={date.year}"
@@ -76,7 +80,7 @@ class BBRefSpider(Spider):
             if re.search(r"boxscores/[0-9]", g):
                 game_id = re.search(r"boxscores/([0-9A-Z])*.html", g).group(1)
                 yield Request(
-                    url=g,
+                    url=self.base_url+g,
                     callback=self.parse_boxscore,
                     cb_kwargs=dict(game_id=game_id),
                 )
@@ -85,7 +89,6 @@ class BBRefSpider(Spider):
         game = self.get_game_information(response, game_id)
         team_stats = self.get_team_stats(response, game_id)
         player_stats = self.get_player_stats(response, game_id)
-
         return {
             "game_data": game,
             "team_stats": team_stats,
@@ -313,7 +316,7 @@ class BBRefSpider(Spider):
     def time_string_to_hours(time: str) -> float:
         # Transforms time from 40:53 -> 40.8833
         split = time.split(":")
-        return split[0] + (split[1] / 60)
+        return split[0] + str(int(split[1]) / 60)
 
     def parse_team_stats(self, response, team_abbr: str):
         # xpath is dynamically named after the teams abbreviation, so that needs to get passed into the
@@ -403,6 +406,8 @@ class BBRefSpider(Spider):
             match = re.search(
                 r"data-stat=\"(?P<stat>[A-Za-z0-9_]+)\">(?P<val>[0-9.]+)<", stat
             )
+            if not match:
+                continue
             if match.group("stat") in stat_map.keys():
                 stats[stat_map.get(match.group("stat"))] = match.group("val")
         return stats
@@ -502,11 +507,11 @@ class BBRefSpider(Spider):
         # BasketballReference record includes the result of the game in question
         # we need to determine game winner and update the record values for wins
         # and losses to get an accurate record up to, but not including the current game.
-        away_losses = split_away[1] if scores[0] > scores[1] else split_away[1] - 1
-        away_wins = split_away[0] if scores[0] < scores[1] else split_away[0] - 1
+        away_losses = split_away[1] if scores[0] > scores[1] else int(split_away[1]) - 1
+        away_wins = split_away[0] if scores[0] < scores[1] else int(split_away[0]) - 1
 
-        home_losses = split_home[1] if scores[1] > scores[0] else split_home[1] - 1
-        home_wins = split_home[0] if scores[1] < scores[0] else split_home[0] - 1
+        home_losses = split_home[1] if scores[1] > scores[0] else int(split_home[1]) - 1
+        home_wins = split_home[0] if scores[1] < scores[0] else int(split_home[0]) - 1
 
         away_record = Record(wins=away_wins, losses=away_losses)
         home_record = Record(wins=home_wins, losses=home_losses)

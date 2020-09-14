@@ -7,7 +7,7 @@ import random
 from datetime import datetime, timedelta
 from typing import List
 
-from game_crawlers.nba.bbref_crawler import BBRefSpider
+from game_crawlers.nba.bbref_crawler import BBRefSpider, BBRefScoreboard
 from game_crawlers.nba.seasons import Seasons
 from db import nba
 
@@ -34,31 +34,32 @@ def get_espn_ids():
 if __name__ == "__main__":
     print("getting game ids")
 
-    db = nba.nbaDB(USER, PASSWORD)
+    # db = nba.nbaDB(USER, PASSWORD)
 
-    # this step removes ids from the list to process if they have already been processed
-    # required due to multiple runs/debug sessions to get it working properly.
-    query = db.session.query(nba.Game.id)
-    t = query.all()
-    current_ids = [str(i[0]) for i in t]
+    # # this step removes ids from the list to process if they have already been processed
+    # # required due to multiple runs/debug sessions to get it working properly.
+    # query = db.session.query(nba.Game.id)
+    # t = query.all()
+    # current_ids = [str(i[0]) for i in t]
 
-    ids = [i for i in ids if i not in current_ids]
-    del db
+    # ids = [i for i in ids if i not in current_ids]
+    # del db
 
-    print(f"{len(ids)} games found")
+    # print(f"{len(ids)} games found")
 
     settings = get_project_settings()
     settings["COOKIES_ENABLED"] = False
     settings["DOWNLOAD_DELAY"] = 1
     settings["LOG_LEVEL"] = "INFO"
     settings["ITEM_PIPELINES"] = {
-        "game_crawler.pipelines.DBWriterPipeline": 100,
+        "game_crawlers.nba.pipelines.JsonWriterPipeline": 100,
     }
     settings["AUTOTHROTTLE_ENABLED"] = True
     settings["AUTHROTTLE_TARGET_CONCURRENCY"] = 3
 
+    url = [BBRefScoreboard().get_urls_date(datetime(2019, 4, 7))]
     process = CrawlerProcess(settings)
-    process.crawl(BBRefSpider, ids=ids)
+    process.crawl(BBRefSpider, urls = url)
     print("starting crawler")
     process.start()
     print("crawling completed")

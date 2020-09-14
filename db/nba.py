@@ -12,7 +12,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
-from game_crawler.nba_seasons import Seasons
+from game_crawlers.nba.seasons import Seasons
 from datetime import datetime
 import pytz
 from typing import List
