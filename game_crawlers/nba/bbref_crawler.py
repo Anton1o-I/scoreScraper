@@ -78,7 +78,7 @@ class BBRefSpider(Spider):
         games = response.xpath('//p[@class="links"]/a/@href').extract()
         for g in games:
             if re.search(r"boxscores/[0-9]", g):
-                game_id = re.search(r"boxscores/([0-9A-Z])*.html", g).group(1)
+                game_id = re.search(r"boxscores/([0-9A-Z]*).html", g).group(1)
                 yield Request(
                     url=self.base_url+g,
                     callback=self.parse_boxscore,
@@ -99,8 +99,7 @@ class BBRefSpider(Spider):
         date_str = response.xpath('//div[@class="scorebox_meta"]').re_first(
             r"[0-9]{1,2}:[0-9]{2}.*[0-9]{4}"
         )
-        date = self.parse_date(date_str)
-
+        
         records = response.xpath('//div[@class="scorebox"]/div/div').re(
             r"[0-9]{1,2}-[0-9]{1,2}"
         )
@@ -110,7 +109,7 @@ class BBRefSpider(Spider):
 
         ar, hr = self.get_away_home_records(records, scores)
 
-        return Game(game_id=game_id, date=date, home_record=hr, away_record=ar)
+        return dict(Game(game_id=game_id, date=date_str, home_record=dict(hr), away_record=dict(ar)))
 
     def get_team_stats(self, response, game_id: str):
         # team_information contains len = 2 list of strings with team name information
@@ -137,7 +136,6 @@ class BBRefSpider(Spider):
         home_stat_obj = TeamStats(
             team=dict(home_team), game_id=game_id, home=True, **home_stats
         )
-
         return {"home_stats": dict(home_stat_obj), "away_stats": dict(away_stat_obj)}
 
     def get_player_stats(self, response, game_id):
@@ -193,14 +191,13 @@ class BBRefSpider(Spider):
 
         player_stats = list()
         for p in basic_stats.keys():
-            combined = basic_stats[p].update(advanced_stats[p])
-            player = Player(**combined)
-            player_stats.append(player)
+            combined = {**basic_stats[p], **advanced_stats[p]}
+            player = PlayerStats(**combined)
+            player_stats.append(dict(player))
         return player_stats
 
     def parse_basic_player(self, stat_list):
         bbref_to_pstat_map_basic = {
-            "mp": "min",
             "fg": "fgm",
             "fga": "fga",
             "fg_pct": "fg_per",
@@ -222,13 +219,13 @@ class BBRefSpider(Spider):
             "plus_minus": "plusminus",
         }
         re_player_info = (
-            r'data-append-csv="(?P<id>[a-z0-9]+)".+csk="(?P<name>[A-Za-z,]+)'
+            r'data-append-csv="(?P<id>[a-z0-9]+)".+csk="(?P<name>.+)"><a'
         )
 
         # mp -> minutes played has an extra identifying field 'csk' within the <> so it needs to be pulled with
         # it's own regex code.
         re_mp = r"data-stat=\"mp\".+>(?P<val>[0-9]{2}:[0-9]{2})</td>"
-        re_stats = r"data-stat=\"(?P<stat>[a-z0-9_]+)\">(?P<val>[0-9.:+]+)</td>"
+        re_stats = r"data-stat=\"(?P<stat>[a-z0-9_]+)\">(?P<val>[0-9.:+-]+)</td>"
 
         player_stats = dict()
         for line in stat_list:
@@ -248,7 +245,11 @@ class BBRefSpider(Spider):
                 first_name=player_name[1],
             )
 
-            mp = re.search(re_mp, stat_group).group("val")
+            s = re.search(re_mp, stat_group)
+            if s is not None:
+                mp = s.group("val")
+            else:
+                mp = "00:00"
             stat_dict = {
                 "player": dict(player_obj),
                 "min": self.time_string_to_hours(mp),
@@ -258,6 +259,10 @@ class BBRefSpider(Spider):
                 if s[0] in bbref_to_pstat_map_basic.keys():
                     stat_dict[bbref_to_pstat_map_basic[s[0]]] = s[1]
 
+            # sets the default values for any missing stats
+            for _,v in bbref_to_pstat_map_basic.items():
+                if stat_dict.get(v, None) is None:
+                    stat_dict[v] = 0
             player_stats[player_info.group("id")] = stat_dict
         return player_stats
 
@@ -277,9 +282,13 @@ class BBRefSpider(Spider):
             "usg_pct": "usg_per",
             "off_rtg": "off_rating",
             "def_rtg": "def_rating",
+            "bpm": "bpm",
+            "obpm": "obpm",
+            "dbpm": "dbpm",
+            "vorp": "vorp"
         }
         re_player_info = (
-            r'data-append-csv="(?P<id>[a-z0-9]+)".+csk="(?P<name>[A-Za-z,]+)'
+            r'data-append-csv="(?P<id>[a-z0-9]+)".+csk="(?P<name>.+)"><a'
         )
         re_stats = r"data-stat=\"(?P<stat>[a-z0-9_]+)\">(?P<val>[0-9.:+]+)</td>"
 
@@ -305,10 +314,15 @@ class BBRefSpider(Spider):
                 if s[0] in bbref_to_pstat_map_advanced.keys():
                     stat_dict[bbref_to_pstat_map_advanced[s[0]]] = s[1]
             bpm_parse = re.search(re_bpm, stat_group)
-            stat_dict["bpm"] = bpm_parse.group("bpm")
-            stat_dict["obpm"] = bpm_parse.group("obpm")
-            stat_dict["dbpm"] = bpm_parse.group("dbpm")
-            stat_dict["vorp"] = bpm_parse.group("vorp")
+            if bpm_parse is not None:
+                stat_dict["bpm"] = bpm_parse.group("bpm")
+                stat_dict["obpm"] = bpm_parse.group("obpm")
+                stat_dict["dbpm"] = bpm_parse.group("dbpm")
+                stat_dict["vorp"] = bpm_parse.group("vorp")
+            
+            for _,v in bbref_to_pstat_map_advanced.items():
+                if stat_dict.get(v, None) is None:
+                    stat_dict[v] = 0
             player_stats[player_info.group("id")] = stat_dict
         return player_stats
 
@@ -507,16 +521,13 @@ class BBRefSpider(Spider):
         # BasketballReference record includes the result of the game in question
         # we need to determine game winner and update the record values for wins
         # and losses to get an accurate record up to, but not including the current game.
-        away_losses = split_away[1] if scores[0] > scores[1] else int(split_away[1]) - 1
-        away_wins = split_away[0] if scores[0] < scores[1] else int(split_away[0]) - 1
+        away_losses = split_away[1] if scores[0] > scores[1] else str(int(split_away[1]) - 1)
+        away_wins = split_away[0] if scores[0] < scores[1] else str(int(split_away[0]) - 1)
 
-        home_losses = split_home[1] if scores[1] > scores[0] else int(split_home[1]) - 1
-        home_wins = split_home[0] if scores[1] < scores[0] else int(split_home[0]) - 1
+        home_losses = split_home[1] if scores[1] > scores[0] else str(int(split_home[1]) - 1)
+        home_wins = split_home[0] if scores[1] < scores[0] else str(int(split_home[0]) - 1)
 
         away_record = Record(wins=away_wins, losses=away_losses)
         home_record = Record(wins=home_wins, losses=home_losses)
         return away_record, home_record
 
-    @staticmethod
-    def parse_date(date_str: str) -> datetime:
-        return datetime.strptime(date_str, "%I:%M %p, %B %d, %Y")
