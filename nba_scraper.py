@@ -53,11 +53,12 @@ if __name__ == "__main__":
     settings["LOG_LEVEL"] = "INFO"
     settings["ITEM_PIPELINES"] = {
         "game_crawlers.nba.pipelines.JsonWriterPipeline": 100,
+        "game_crawlers.nba.pipelines.DBWriterPipeline": 100,
     }
     settings["AUTOTHROTTLE_ENABLED"] = True
     settings["AUTHROTTLE_TARGET_CONCURRENCY"] = 3
 
-    url = [BBRefScoreboard().get_urls_date(datetime(2019, 4, 7))]
+    url = [BBRefScoreboard().get_all_scoreboard_urls()]
     process = CrawlerProcess(settings)
     process.crawl(BBRefSpider, urls = url)
     print("starting crawler")
