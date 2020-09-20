@@ -34,19 +34,6 @@ def get_espn_ids():
 if __name__ == "__main__":
     print("getting game ids")
 
-    # db = nba.nbaDB(USER, PASSWORD)
-
-    # # this step removes ids from the list to process if they have already been processed
-    # # required due to multiple runs/debug sessions to get it working properly.
-    # query = db.session.query(nba.Game.id)
-    # t = query.all()
-    # current_ids = [str(i[0]) for i in t]
-
-    # ids = [i for i in ids if i not in current_ids]
-    # del db
-
-    # print(f"{len(ids)} games found")
-
     settings = get_project_settings()
     settings["COOKIES_ENABLED"] = False
     settings["DOWNLOAD_DELAY"] = 1
