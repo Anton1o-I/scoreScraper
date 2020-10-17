@@ -20,7 +20,7 @@ from game_crawlers.nba.fields import (
 class BBRefScoreboard:
     """
     Class to pull list of dates that NBA games were played using range for regular and post season
-    schedules. Some games may still be empty, but get_scoreboard_urls() will return the urls for 
+    schedules. Some games may still be empty, but get_scoreboard_urls() will return the urls for
     all days where a game possibly occurred.
     """
 
@@ -37,7 +37,7 @@ class BBRefScoreboard:
                 self._get_bbref_url(v["post_season_start"], v["post_season_end"])
             )
         return url_list
-    
+
     def get_urls_by_range(self, start, end):
         delta = (end + timedelta(days=1) - start).days
         return [self.get_urls_date(d) for d in delta]
@@ -58,7 +58,7 @@ class BBRefScoreboard:
 class BBRefSpider(Spider):
     """
     Scrapy Spider that handles all logic for parsing the scoreboard page and then the boxscore
-    for basketball-reference website games. 
+    for basketball-reference website games.
     """
 
     name = "nba_boxscores"
@@ -71,7 +71,8 @@ class BBRefSpider(Spider):
     def start_requests(self):
         for l in self.urls:
             yield Request(
-                url=l, callback=self.parse_scoreboard,
+                url=l,
+                callback=self.parse_scoreboard,
             )
 
     def parse_scoreboard(self, response):
@@ -80,7 +81,7 @@ class BBRefSpider(Spider):
             if re.search(r"boxscores/[0-9]", g):
                 game_id = re.search(r"boxscores/([0-9A-Z]*).html", g).group(1)
                 yield Request(
-                    url=self.base_url+g,
+                    url=self.base_url + g,
                     callback=self.parse_boxscore,
                     cb_kwargs=dict(game_id=game_id),
                 )
@@ -99,7 +100,7 @@ class BBRefSpider(Spider):
         date_str = response.xpath('//div[@class="scorebox_meta"]').re_first(
             r"[0-9]{1,2}:[0-9]{2}.*[0-9]{4}"
         )
-        
+
         records = response.xpath('//div[@class="scorebox"]/div/div').re(
             r"[0-9]{1,2}-[0-9]{1,2}"
         )
@@ -109,7 +110,14 @@ class BBRefSpider(Spider):
 
         ar, hr = self.get_away_home_records(records, scores)
 
-        return dict(Game(game_id=game_id, date=date_str, home_record=dict(hr), away_record=dict(ar)))
+        return dict(
+            Game(
+                game_id=game_id,
+                date=date_str,
+                home_record=dict(hr),
+                away_record=dict(ar),
+            )
+        )
 
     def get_team_stats(self, response, game_id: str):
         # team_information contains len = 2 list of strings with team name information
@@ -218,9 +226,7 @@ class BBRefSpider(Spider):
             "pts": "points",
             "plus_minus": "plus_minus",
         }
-        re_player_info = (
-            r'data-append-csv="(?P<id>[a-z0-9]+)".+csk="(?P<name>.+)"><a'
-        )
+        re_player_info = r'data-append-csv="(?P<id>[a-z0-9]+)".+csk="(?P<name>.+)"><a'
 
         # mp -> minutes played has an extra identifying field 'csk' within the <> so it needs to be pulled with
         # it's own regex code.
@@ -260,7 +266,7 @@ class BBRefSpider(Spider):
                     stat_dict[bbref_to_pstat_map_basic[s[0]]] = s[1]
 
             # sets the default values for any missing stats
-            for _,v in bbref_to_pstat_map_basic.items():
+            for _, v in bbref_to_pstat_map_basic.items():
                 if stat_dict.get(v, None) is None:
                     stat_dict[v] = 0
             player_stats[player_info.group("id")] = stat_dict
@@ -285,11 +291,9 @@ class BBRefSpider(Spider):
             "bpm": "bpm",
             "obpm": "obpm",
             "dbpm": "dbpm",
-            "vorp": "vorp"
+            "vorp": "vorp",
         }
-        re_player_info = (
-            r'data-append-csv="(?P<id>[a-z0-9]+)".+csk="(?P<name>.+)"><a'
-        )
+        re_player_info = r'data-append-csv="(?P<id>[a-z0-9]+)".+csk="(?P<name>.+)"><a'
         re_stats = r"data-stat=\"(?P<stat>[a-z0-9_]+)\">(?P<val>[0-9.:+]+)</td>"
 
         # bpm field has extra information, so below regex parses all that out. Example bpm cell:
@@ -319,8 +323,8 @@ class BBRefSpider(Spider):
                 stat_dict["obpm"] = bpm_parse.group("obpm")
                 stat_dict["dbpm"] = bpm_parse.group("dbpm")
                 stat_dict["vorp"] = bpm_parse.group("vorp")
-            
-            for _,v in bbref_to_pstat_map_advanced.items():
+
+            for _, v in bbref_to_pstat_map_advanced.items():
                 if stat_dict.get(v, None) is None:
                     stat_dict[v] = 0
             player_stats[player_info.group("id")] = stat_dict
@@ -521,13 +525,20 @@ class BBRefSpider(Spider):
         # BasketballReference record includes the result of the game in question
         # we need to determine game winner and update the record values for wins
         # and losses to get an accurate record up to, but not including the current game.
-        away_losses = split_away[1] if scores[0] > scores[1] else str(int(split_away[1]) - 1)
-        away_wins = split_away[0] if scores[0] < scores[1] else str(int(split_away[0]) - 1)
+        away_losses = (
+            split_away[1] if scores[0] > scores[1] else str(int(split_away[1]) - 1)
+        )
+        away_wins = (
+            split_away[0] if scores[0] < scores[1] else str(int(split_away[0]) - 1)
+        )
 
-        home_losses = split_home[1] if scores[1] > scores[0] else str(int(split_home[1]) - 1)
-        home_wins = split_home[0] if scores[1] < scores[0] else str(int(split_home[0]) - 1)
+        home_losses = (
+            split_home[1] if scores[1] > scores[0] else str(int(split_home[1]) - 1)
+        )
+        home_wins = (
+            split_home[0] if scores[1] < scores[0] else str(int(split_home[0]) - 1)
+        )
 
         away_record = Record(wins=away_wins, losses=away_losses)
         home_record = Record(wins=home_wins, losses=home_losses)
         return away_record, home_record
-

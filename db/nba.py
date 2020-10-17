@@ -224,8 +224,8 @@ class nbaDB:
     def get_season(date: str) -> String:
         d = datetime.strptime(date, "%I:%M %p, %B %d, %Y").date()
         for k, v in Seasons.season_info.items():
-            rss = v["regular_season_start"] 
-            pse = v["post_season_end"]  
+            rss = v["regular_season_start"]
+            pse = v["post_season_end"]
             if d >= rss.date() and d <= pse.date():
                 return k
 
@@ -249,12 +249,12 @@ class nbaDB:
                 # create dictionary to pass to sqlalchemy object since most fields
                 # match exactly between scrapy and psql.
                 skip_field = ["player", "min"]
-                pass_dict = {k:v for k,v in ps.items() if k not in skip_field}
+                pass_dict = {k: v for k, v in ps.items() if k not in skip_field}
                 stat = PlayerStat(
                     player_id=ps.get("player", "")["player_id"],
                     team_abbr=pk_map[k],
-                    minutes = ps.get("min", ""),
-                    **pass_dict
+                    minutes=ps.get("min", ""),
+                    **pass_dict,
                 )
                 player_db_list.append(stat)
         return player_db_list
@@ -267,12 +267,12 @@ class nbaDB:
             # create dictionary to pass to sqlalchemy object since most fields
             # match exactly between scrapy and psql.
             skip_fields = ["game_id", "team", "home"]
-            pass_dict = {k:v for k,v in team.items() if k not in skip_fields}
+            pass_dict = {k: v for k, v in team.items() if k not in skip_fields}
             team_stat = TeamStat(
                 game_id=team.get("game_id", ""),
                 team_abbr=team.get("team", {}).get("abbreviation", ""),
                 home=True if (k == "home_stats") else False,
-                **pass_dict
+                **pass_dict,
             )
             team_db_list.append(team_stat)
         return team_db_list

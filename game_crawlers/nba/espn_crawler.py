@@ -352,7 +352,11 @@ class NBAESPNSpider(scrapy.Spider):
     def new_team(html_str: str) -> Team:
         team_re = r">([A-Za-z0-9/ ]+)<"
         out = re.findall(team_re, html_str)
-        return Team(location=out[0], name=out[1], abbreviation=out[2],)
+        return Team(
+            location=out[0],
+            name=out[1],
+            abbreviation=out[2],
+        )
 
     # new_line returns the over/under and spread information for a game
     @staticmethod

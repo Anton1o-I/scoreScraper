@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     url = BBRefScoreboard().get_all_scoreboard_urls()
     process = CrawlerProcess(settings)
-    process.crawl(BBRefSpider, urls = url)
+    process.crawl(BBRefSpider, urls=url)
     print("starting crawler")
     process.start()
     print("crawling completed")
