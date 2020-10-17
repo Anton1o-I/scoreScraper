@@ -330,7 +330,7 @@ class BBRefSpider(Spider):
     def time_string_to_hours(time: str) -> float:
         # Transforms time from 40:53 -> 40.8833
         split = time.split(":")
-        return split[0] + str(int(split[1]) / 60)
+        return str(int(split[0]) + (int(split[1]) / 60))
 
     def parse_team_stats(self, response, team_abbr: str):
         # xpath is dynamically named after the teams abbreviation, so that needs to get passed into the
