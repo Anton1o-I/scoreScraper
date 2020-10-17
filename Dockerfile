@@ -3,7 +3,7 @@ FROM python:3.7-alpine3.8
 # download example files and requirements
 RUN mkdir /app
 COPY ./requirements.txt /app/requirements.txt
-COPY ./game_crawler /app/
+COPY ./game_crawlers /app/
 # update apk repo
 RUN echo "http://dl-4.alpinelinux.org/alpine/v3.8/main" >> /etc/apk/repositories && \
     echo "http://dl-4.alpinelinux.org/alpine/v3.8/community" >> /etc/apk/repositories
