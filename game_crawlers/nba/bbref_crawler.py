@@ -16,7 +16,7 @@ from game_crawlers.nba.fields import (
     TeamStats,
 )
 
-TEAM__NAME_REGEX = r"teams/(?P<abbr>[A-Z]{3}).*>(?P<name>[/A-Za-z0-9 ]+)<"
+TEAM_NAME_REGEX = r"teams/(?P<abbr>[A-Z]{3}).*>(?P<name>[/A-Za-z0-9 ]+)<"
 
 class BBRefScoreboard:
     """
