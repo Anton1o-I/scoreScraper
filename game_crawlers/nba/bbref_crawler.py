@@ -16,6 +16,7 @@ from game_crawlers.nba.fields import (
     TeamStats,
 )
 
+TEAM__NAME_REGEX = r"teams/(?P<abbr>[A-Z]{3}).*>(?P<name>[/A-Za-z0-9 ]+)<"
 
 class BBRefScoreboard:
     """
@@ -126,10 +127,10 @@ class BBRefSpider(Spider):
         # regex parses <a href="/teams/POR/2006.html" itemprop="name">Portland Trail Blazers</a> into groups
         # POR -> "abbr", Portland Trail Blazers -> "name"
         away = re.search(
-            r"teams/(?P<abbr>[A-Z]{3}).*>(?P<name>[A-Za-z0-9 ]+)<", team_information[0]
+            TEAM_NAME_REGEX, team_information[0]
         )
         home = re.search(
-            r"teams/(?P<abbr>[A-Z]{3}).*>(?P<name>[A-Za-z0-9 ]+)<", team_information[1]
+            TEAM_NAME_REGEX, team_information[1]
         )
 
         away_team = Team(name=away.group("name"), abbreviation=away.group("abbr"))
@@ -153,10 +154,10 @@ class BBRefSpider(Spider):
         # regex parses <a href="/teams/POR/2006.html" itemprop="name">Portland Trail Blazers</a> into groups
         # POR -> "abbr", Portland Trail Blazers -> "name"
         away = re.search(
-            r"teams/(?P<abbr>[A-Z]{3}).*>(?P<name>[A-Za-z0-9 ]+)<", team_information[0]
+            TEAM_NAME_REGEX, team_information[0]
         ).group("abbr")
         home = re.search(
-            r"teams/(?P<abbr>[A-Z]{3}).*>(?P<name>[A-Za-z0-9 ]+)<", team_information[1]
+            TEAM_NAME_REGEX, team_information[1]
         ).group("abbr")
 
         home_stats = self.parse_player_stats(response, home)

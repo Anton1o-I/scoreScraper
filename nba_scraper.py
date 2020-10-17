@@ -44,7 +44,8 @@ if __name__ == "__main__":
     settings["AUTOTHROTTLE_ENABLED"] = True
     settings["AUTHROTTLE_TARGET_CONCURRENCY"] = 3
 
-    url = BBRefScoreboard().get_all_scoreboard_urls()
+    #url = BBRefScoreboard().get_all_scoreboard_urls()
+    url = ['https://www.basketball-reference.com/boxscores/?month=11&day=01&year=2005']
     process = CrawlerProcess(settings)
     process.crawl(BBRefSpider, urls=url)
     print("starting crawler")
