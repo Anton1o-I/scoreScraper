@@ -39,7 +39,6 @@ if __name__ == "__main__":
     settings["DOWNLOAD_DELAY"] = 1
     settings["LOG_LEVEL"] = "INFO"
     settings["ITEM_PIPELINES"] = {
-        "game_crawlers.nba.pipelines.JsonWriterPipeline": 100,
         "game_crawlers.nba.pipelines.DBWriterPipeline": 100,
     }
     settings["AUTOTHROTTLE_ENABLED"] = True
