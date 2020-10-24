@@ -101,6 +101,10 @@ class BBRefSpider(Spider):
         date_str = response.xpath('//div[@class="scorebox_meta"]').re_first(
             r"[0-9]{1,2}:[0-9]{2}.*[0-9]{4}"
         )
+        if date_str is None:
+            date_str = response.xpath('//div[@class="scorebox_meta"]').re_first(
+            r"([A-Za-z]{4,8} [0-9]{1,2}, [0-9]{4})"
+        )
 
         records = response.xpath('//div[@class="scorebox"]/div/div').re(
             r"[0-9]{1,2}-[0-9]{1,2}"
@@ -527,17 +531,17 @@ class BBRefSpider(Spider):
         # we need to determine game winner and update the record values for wins
         # and losses to get an accurate record up to, but not including the current game.
         away_losses = (
-            split_away[1] if scores[0] > scores[1] else str(int(split_away[1]) - 1)
+            split_away[1] if int(scores[0]) > int(scores[1]) else str(int(split_away[1]) - 1)
         )
         away_wins = (
-            split_away[0] if scores[0] < scores[1] else str(int(split_away[0]) - 1)
+            split_away[0] if int(scores[0]) < int(scores[1]) else str(int(split_away[0]) - 1)
         )
 
         home_losses = (
-            split_home[1] if scores[1] > scores[0] else str(int(split_home[1]) - 1)
+            split_home[1] if int(scores[1]) > int(scores[0]) else str(int(split_home[1]) - 1)
         )
         home_wins = (
-            split_home[0] if scores[1] < scores[0] else str(int(split_home[0]) - 1)
+            split_home[0] if int(scores[1]) < int(scores[0]) else str(int(split_home[0]) - 1)
         )
 
         away_record = Record(wins=away_wins, losses=away_losses)

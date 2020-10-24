@@ -222,7 +222,10 @@ class nbaDB:
 
     @staticmethod
     def get_season(date: str) -> String:
-        d = datetime.strptime(date, "%I:%M %p, %B %d, %Y").date()
+        try:
+            d = datetime.strptime(date, "%I:%M %p, %B %d, %Y").date()
+        except ValueError:
+            d = datetime.strptime(date, "%B %d, %Y").date()
         for k, v in Seasons.season_info.items():
             rss = v["regular_season_start"]
             pse = v["post_season_end"]
@@ -231,7 +234,10 @@ class nbaDB:
 
     @staticmethod
     def regular_season(date: str, season: str) -> Boolean:
-        d = datetime.strptime(date, "%I:%M %p, %B %d, %Y").date()
+        try:
+            d = datetime.strptime(date, "%I:%M %p, %B %d, %Y").date()
+        except ValueError:
+            d = datetime.strptime(date, "%B %d, %Y").date()
         rss = Seasons.season_info[season]["regular_season_start"]
         rse = Seasons.season_info[season]["regular_season_end"]
         if d >= rss.date() and d <= rse.date():
