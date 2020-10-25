@@ -103,7 +103,7 @@ class BBRefSpider(Spider):
         )
         if date_str is None:
             date_str = response.xpath('//div[@class="scorebox_meta"]').re_first(
-            r"([A-Za-z]{4,8} [0-9]{1,2}, [0-9]{4})"
+            r"([A-Za-z]{3,8} [0-9]{1,2}, [0-9]{4})"
         )
 
         records = response.xpath('//div[@class="scorebox"]/div/div').re(

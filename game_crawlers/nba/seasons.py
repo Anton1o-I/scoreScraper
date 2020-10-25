@@ -6,22 +6,22 @@ from datetime import datetime
 class Seasons:
     season_info = {
          "90-91": {
-            "regular_season_start": datetime(1990, 11, 1),
-            "regular_season_end": datetime(1991, 4, 19),
-            "post_season_start": datetime(1991, 4, 23),
-            "post_season_end": datetime(1991, 6, 14),
+            "regular_season_start": datetime(1990, 11, 2),
+            "regular_season_end": datetime(1991, 4, 21),
+            "post_season_start": datetime(1991, 4, 25),
+            "post_season_end": datetime(1991, 6, 12),
         },          
         "91-92": {
-            "regular_season_start": datetime(1991, 11, 6),
-            "regular_season_end": datetime(1992, 4, 25),
-            "post_season_start": datetime(1992, 4, 29),
-            "post_season_end": datetime(1992, 6, 20),
+            "regular_season_start": datetime(1991, 11, 1),
+            "regular_season_end": datetime(1992, 4, 19),
+            "post_season_start": datetime(1992, 4, 23),
+            "post_season_end": datetime(1992, 6, 14),
         },   
         "92-93": {
-            "regular_season_start": datetime(1992, 11, 5),
-            "regular_season_end": datetime(1993, 4, 24),
-            "post_season_start": datetime(1993, 4, 28),
-            "post_season_end": datetime(1993, 6, 22),
+            "regular_season_start": datetime(1992, 11, 6),
+            "regular_season_end": datetime(1993, 4, 25),
+            "post_season_start": datetime(1993, 4, 29),
+            "post_season_end": datetime(1993, 6, 20),
         },             
         "93-94": {
             "regular_season_start": datetime(1993, 11, 5),

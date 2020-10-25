@@ -42,7 +42,7 @@ if __name__ == "__main__":
         "game_crawlers.nba.pipelines.DBWriterPipeline": 100,
     }
     settings["AUTOTHROTTLE_ENABLED"] = True
-    settings["AUTHROTTLE_TARGET_CONCURRENCY"] = 3
+    settings["AUTHROTTLE_TARGET_CONCURRENCY"] = 5
 
     url = BBRefScoreboard().get_all_scoreboard_urls()
     process = CrawlerProcess(settings)

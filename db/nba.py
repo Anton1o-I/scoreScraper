@@ -85,8 +85,6 @@ class TeamStat(Base):
     ot_pts = Column(Integer)
     pace = Column(Float)  # Four Factor Table
     efg_per = Column(Float)
-    to_per = Column(Float)  # Four Factor Table
-    orb_per = Column(Float)
     ft_per_fga = Column(Float)  # Four Factor table
     off_rating = Column(Float)
     ts_per = Column(Float)
