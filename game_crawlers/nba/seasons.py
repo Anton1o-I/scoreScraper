@@ -179,4 +179,34 @@ class Seasons:
             "post_season_start": datetime(2019, 4, 13),
             "post_season_end": datetime(2019, 6, 13),
         },
+        "19-20": {
+            "regular_season_start": datetime(2019, 10, 22),
+            "regular_season_end": datetime(2020, 8, 14),
+            "post_season_start": datetime(2020, 8, 15),
+            "post_season_end": datetime(2020, 10, 11),
+        },
+        "20-21": {
+            "regular_season_start": datetime(2020, 12, 22),
+            "regular_season_end": datetime(2021, 5, 16),
+            "post_season_start": datetime(2021, 5, 18),
+            "post_season_end": datetime(2021, 7, 20),
+        },
+        "21-22": {
+            "regular_season_start": datetime(2021, 10, 19),
+            "regular_season_end": datetime(2022, 4, 10),
+            "post_season_start": datetime(2022, 4, 12),
+            "post_season_end": datetime(2022, 6, 16),
+        },
+        "22-23": {
+            "regular_season_start": datetime(2022, 10, 18),
+            "regular_season_end": datetime(2023, 4, 9),
+            "post_season_start": datetime(2023, 4, 11),
+            "post_season_end": datetime(2023, 6, 12),
+        },
+        "23-24": {
+            "regular_season_start": datetime(2023, 10, 24),
+            "regular_season_end": datetime(2024, 4, 14),
+            "post_season_start": datetime(2024, 4, 16),
+            "post_season_end": datetime(2024, 6, 17),
+        },
      }
