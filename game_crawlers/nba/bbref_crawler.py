@@ -39,10 +39,6 @@ class BBRefScoreboard:
             )
         return url_list
 
-    def get_urls_by_range(self, start, end):
-        delta = (end + timedelta(days=1) - start).days
-        return [self.get_urls_date(d) for d in delta]
-
     def get_urls_date(self, date: datetime):
         return f"https://www.basketball-reference.com/boxscores/?month={date.month}&day={date.day}&year={date.year}"
 

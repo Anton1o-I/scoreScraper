@@ -1,3 +1,4 @@
+import os
 from sqlalchemy import (
     create_engine,
     Table,
@@ -86,7 +87,6 @@ class TeamStat(Base):
     pace = Column(Float)  # Four Factor Table
     efg_per = Column(Float)
     ft_per_fga = Column(Float)  # Four Factor table
-    off_rating = Column(Float)
     ts_per = Column(Float)
     x3p_ar = Column(Float)
     ft_ar = Column(Float)
@@ -163,8 +163,9 @@ class PlayerStat(Base):
 
 class nbaDB:
     def __init__(self, user, password):
+        host = os.environ.get("DB_HOST", "localhost")
         self.engine = create_engine(
-            f"postgresql://{user}:{password}@localhost:5432/nba_stats", echo=False
+            f"postgresql://{user}:{password}@{host}:5432/nba_stats", echo=False
         )
         Sess = sessionmaker(bind=self.engine)
         self.session = Sess()
@@ -232,6 +233,8 @@ class nbaDB:
 
     @staticmethod
     def regular_season(date: str, season: str) -> Boolean:
+        if season is None:
+            return False
         try:
             d = datetime.strptime(date, "%I:%M %p, %B %d, %Y").date()
         except ValueError:

@@ -55,7 +55,6 @@ class TeamStats(scrapy.Item):
     pace = scrapy.Field()  # Four Factor Table
     efg_per = scrapy.Field()
     ft_per_fga = scrapy.Field()  # Four Factor table
-    off_rating = scrapy.Field()
     ts_per = scrapy.Field()
     x3p_ar = scrapy.Field()
     ft_ar = scrapy.Field()

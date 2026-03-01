@@ -5,36 +5,36 @@ from datetime import datetime
 @dataclass
 class Seasons:
     season_info = {
-         "90-91": {
+        "90-91": {
             "regular_season_start": datetime(1990, 11, 2),
             "regular_season_end": datetime(1991, 4, 21),
             "post_season_start": datetime(1991, 4, 25),
             "post_season_end": datetime(1991, 6, 12),
-        },          
+        },
         "91-92": {
             "regular_season_start": datetime(1991, 11, 1),
             "regular_season_end": datetime(1992, 4, 19),
             "post_season_start": datetime(1992, 4, 23),
             "post_season_end": datetime(1992, 6, 14),
-        },   
+        },
         "92-93": {
             "regular_season_start": datetime(1992, 11, 6),
             "regular_season_end": datetime(1993, 4, 25),
             "post_season_start": datetime(1993, 4, 29),
             "post_season_end": datetime(1993, 6, 20),
-        },             
+        },
         "93-94": {
             "regular_season_start": datetime(1993, 11, 5),
             "regular_season_end": datetime(1994, 4, 24),
             "post_season_start": datetime(1994, 4, 28),
             "post_season_end": datetime(1994, 6, 22),
-        },               
+        },
         "94-95": {
             "regular_season_start": datetime(1994, 11, 4),
             "regular_season_end": datetime(1995, 4, 23),
             "post_season_start": datetime(1995, 4, 27),
             "post_season_end": datetime(1995, 6, 14),
-        },        
+        },
         "95-96": {
             "regular_season_start": datetime(1995, 11, 3),
             "regular_season_end": datetime(1996, 4, 21),
@@ -209,4 +209,16 @@ class Seasons:
             "post_season_start": datetime(2024, 4, 16),
             "post_season_end": datetime(2024, 6, 17),
         },
-     }
+        "24-25": {
+            "regular_season_start": datetime(2024, 10, 22),
+            "regular_season_end": datetime(2025, 4, 13),
+            "post_season_start": datetime(2025, 4, 15),
+            "post_season_end": datetime(2025, 6, 22),
+        },
+        "25-26": {
+            "regular_season_start": datetime(2025, 10, 21),
+            "regular_season_end": datetime(2026, 4, 12),
+            "post_season_start": datetime(2026, 4, 14),
+            "post_season_end": datetime(2026, 6, 21),
+        },
+    }
